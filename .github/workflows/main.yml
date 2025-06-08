@@ -1,46 +1,44 @@
-name: Generate and Deploy RSS Feed
+name: Запуск парсера Pepper (ScraperAPI) и сохранение в Main
 
 on:
   schedule:
-    # Запускать каждый час.
-    # Это стандартный синтаксис Cron.
-    # Например, '0 * * * *' означает "в 0 минут каждого часа, каждый день".
-    # Можно изменить на '0 0 * * *' для ежедневного запуска в полночь и т.д.
+    # Запускать каждый час
     - cron: '0 * * * *'
-  workflow_dispatch: # Позволяет запускать вручную из вкладки Actions
+  workflow_dispatch: # Позволяет запускать вручную
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest # Используем последнюю версию Ubuntu
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4 # Скачиваем код из репозитория
+    - name: Клонировать репозиторий
+      uses: actions/checkout@v4
       with:
-        # Важно: Чтобы Action мог пушить изменения, нужно использовать токен с правами записи
-        token: ${{ secrets.GITHUB_TOKEN }} # Стандартный токен GitHub с правами на запись
+        # Важно: необходимо получить токен для записи в репозиторий
+        # По умолчанию checkout action использует токен, который может не иметь прав на push
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set up Python
+    - name: Настроить Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.9' # Или 3.10, 3.11, в зависимости от предпочтений
+        python-version: '3.x' # Укажите нужную версию Python, например '3.9' или '3.10'
 
-    - name: Install dependencies
+    - name: Установить зависимости
       run: |
-        pip install -r requirements.txt # Устанавливаем библиотеки из requirements.txt
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 feedgen pytz
 
-    - name: Run Python script to generate RSS
+    - name: Запустить скрипт Python
       env:
-        # Передаем API-ключ ScraperAPI как секрет
-        # Это ОЧЕНЬ ВАЖНО для безопасности!
-        SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }}
-      run: |
-        python pepper_parser.py # Запускаем ваш Python-скрипт
+        SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }} # Передаем API-ключ как переменную окружения
+      run: python pepper_parser.py
 
-    - name: Commit and push RSS feed
+    - name: Настроить Git и зафиксировать изменения в main
       run: |
-        git config user.name 'github-actions[bot]' # Настраиваем пользователя Git
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
-        git add pepper_feed.xml # Добавляем сгенерированный RSS-файл в Git
-        git commit -m "Update RSS feed [skip ci]" || echo "No changes to commit" # Коммитим изменения
-        git push # Отправляем изменения в репозиторий
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Проверяем, есть ли изменения в файле, чтобы избежать пустых коммитов
+        git add pepper_feed.xml
+        git diff-index --quiet HEAD || (git commit -m "Автоматическое обновление RSS-фида pepper_feed.xml [skip ci]" && git push)
+        echo "Проверка завершена. Если файл изменился, он был закоммичен и отправлен."
