@@ -1,4 +1,4 @@
-name: Парсера pepper.ru/new через ScraperAPI и публикация в GitHub Pages
+name: Парсер pepper.ru/new через ScraperAPI и публикация в GitHub Pages
 
 on:
   schedule:
