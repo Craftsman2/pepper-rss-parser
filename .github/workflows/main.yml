@@ -1,4 +1,4 @@
-name: Запуск парсера Pepper (ScraperAPI) и публикация в GitHub Pages
+name: Парсера pepper.ru/new через ScraperAPI и публикация в GitHub Pages
 
 on:
   schedule:
@@ -26,7 +26,7 @@ jobs:
 
     - name: Запустить скрипт Python
       env:
-        SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }} # Передаем API-ключ как переменную окружения
+        SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }} # Передаем API-ключ как переменную окружения (sdfwef1)
       run: python pepper_parser.py
 
     - name: Развертывание RSS-фида на GitHub Pages
