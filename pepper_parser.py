@@ -7,7 +7,7 @@ import re # Для более точного поиска картинок
 import os # Импортируем модуль os для работы с файловой системой
 
 # --- Настройки ScraperAPI ---
-API_KEY = os.environ.get("SCRAPERAPI_API_KEY") # <-- Вставьте сюда ваш API-ключ с ScraperAPI.com
+API_KEY = "cd84cca9fbc65fdc3c46f325f6b33550" # <-- Вставьте сюда ваш API-ключ с ScraperAPI.com
 SCRAPERAPI_URL = "http://api.scraperapi.com/"
 TARGET_URL = "https://www.pepper.ru/new"
 
@@ -27,7 +27,8 @@ fg = None # Инициализируем fg как None, чтобы избежа
 
 try:
     print(f"Отправка запроса через ScraperAPI к: {TARGET_URL}")
-    response = requests.get(SCRAPERAPI_URL, params=scraperapi_params, timeout=60)
+    # Увеличен таймаут до 180 секунд (3 минуты)
+    response = requests.get(SCRAPERAPI_URL, params=scraperapi_params, timeout=180) 
 
     if response.status_code == 200:
         html_content = response.text
@@ -51,7 +52,7 @@ try:
             else:
                 print("❌ Элементы 'article' не найдены внутри 'deals-list'.")
         else:
-            print("❌ 'deals-list' не найден.")
+            print("❌ 'deals-list' не найден. Список предложений будет пустым.")
 
         # Теперь offer_cards - это all_found_cards. Если ничего не найдено, offer_cards будет пустым.
         offer_cards = all_found_cards
@@ -174,10 +175,14 @@ try:
         # Если статус код не 200, то fg не будет определен в этом блоке
         print(f"❌ Ошибка при загрузке страницы через ScraperAPI. Статус код: {response.status_code}")
         print(f"Текст ответа: {response.text[:500]}...")
+        # Возвращаем ошибку для GitHub Actions
         raise Exception(f"Ошибка ScraperAPI: {response.status_code}")
 
 except requests.exceptions.RequestException as req_e:
     print(f"Произошла ошибка при выполнении HTTP-запроса: {req_e}")
+    # Возвращаем ошибку для GitHub Actions
+    raise Exception(f"Ошибка HTTP-запроса: {req_e}")
 except Exception as e:
-    # Здесь мы поймаем любую другую ошибку, включая NameError, если fg вдруг не был определен
     print(f"Произошла общая ошибка: {e}")
+    # Возвращаем ошибку для GitHub Actions
+    raise Exception(f"Общая ошибка: {e}")
