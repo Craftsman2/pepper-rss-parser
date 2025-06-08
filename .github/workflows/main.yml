@@ -5,6 +5,7 @@ on:
     # Запускать каждый час.
     # Это стандартный синтаксис Cron.
     # Например, '0 * * * *' означает "в 0 минут каждого часа, каждый день".
+    # Можно изменить на '0 0 * * *' для ежедневного запуска в полночь и т.д.
     - cron: '0 * * * *'
   workflow_dispatch: # Позволяет запускать вручную из вкладки Actions
 
@@ -30,6 +31,8 @@ jobs:
 
     - name: Run Python script to generate RSS
       env:
+        # Передаем API-ключ ScraperAPI как секрет
+        # Это ОЧЕНЬ ВАЖНО для безопасности!
         SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }}
       run: |
         python pepper_parser.py # Запускаем ваш Python-скрипт
@@ -40,12 +43,20 @@ jobs:
         ls -l . # Показать файлы в текущей директории
         test -f pepper_feed.xml && echo "pepper_feed.xml exists!" || echo "pepper_feed.xml DOES NOT exist!"
 
-    - name: Auto commit generated RSS feed # НОВЫЙ ШАГ для автоматического коммита и пуша
+    - name: Auto commit generated RSS feed # Использование готового Action для автоматического коммита и пуша
       uses: stefanzweifel/git-auto-commit-action@v5 # Используем готовый Action
       with:
-        commit_message: "Update RSS feed (Auto-commit by Action)" # Сообщение коммита
-        files: pepper_feed.xml # Файлы, которые нужно добавить и закоммитить
-        # Дополнительные настройки можно добавить, если нужно, но для RSS этого достаточно.
-        # Например, `branch: main` если нужно явно указать ветку
-        # Если вы хотите пропустить CI/CD для этого коммита, добавьте в сообщение [skip ci]
+        # Указываем файл, который нужно добавить и закоммитить
+        file_pattern: 'pepper_feed.xml' 
 
+        # Сообщение коммита
+        commit_message: "Update RSS feed (Auto-commit by Action)" 
+        
+        # Принудительный пуш для решения проблем с расхождениями веток.
+        # Используйте с осторожностью! Безопасно, если Action - единственный
+        # источник изменений для pepper_feed.xml.
+        push_options: '--force' 
+
+        # Явно устанавливаем автора коммита как бота
+        commit_user_name: 'github-actions[bot]'
+        commit_user_email: '41898282+github-actions[bot]@users.noreply.github.com'
