@@ -7,7 +7,7 @@ import re # Для более точного поиска картинок
 import os # Импортируем модуль os для работы с файловой системой
 
 # --- Настройки ScraperAPI ---
-API_KEY = "cd84cca9fbc65fdc3c46f325f6b33550" # <-- Вставьте сюда ваш API-ключ с ScraperAPI.com
+API_KEY = os.environ.get("SCRAPERAPI_API_KEY") # <-- Вставьте сюда ваш API-ключ с ScraperAPI.com
 SCRAPERAPI_URL = "http://api.scraperapi.com/"
 TARGET_URL = "https://www.pepper.ru/new"
 
