@@ -37,26 +37,10 @@ jobs:
       run: |
         python pepper_parser.py # Запускаем ваш Python-скрипт
 
-    - name: Verify RSS file creation # Шаг отладки (можно убрать после успешной настройки)
+    - name: Commit and push RSS feed
       run: |
-        echo "Listing files in current directory:"
-        ls -l . # Показать файлы в текущей директории
-        test -f pepper_feed.xml && echo "pepper_feed.xml exists!" || echo "pepper_feed.xml DOES NOT exist!"
-
-    - name: Auto commit generated RSS feed # Использование готового Action для автоматического коммита и пуша
-      uses: stefanzweifel/git-auto-commit-action@v5 # Используем готовый Action
-      with:
-        # Указываем файл, который нужно добавить и закоммитить
-        file_pattern: 'pepper_feed.xml' 
-
-        # Сообщение коммита
-        commit_message: "Update RSS feed (Auto-commit by Action)" 
-        
-        # Принудительный пуш для решения проблем с расхождениями веток.
-        # Используйте с осторожностью! Безопасно, если Action - единственный
-        # источник изменений для pepper_feed.xml.
-        push_options: '--force' 
-
-        # Явно устанавливаем автора коммита как бота
-        commit_user_name: 'github-actions[bot]'
-        commit_user_email: '41898282+github-actions[bot]@users.noreply.github.com'
+        git config user.name 'github-actions[bot]' # Настраиваем пользователя Git
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git add pepper_feed.xml # Добавляем сгенерированный RSS-файл в Git
+        git commit -m "Update RSS feed [skip ci]" || echo "No changes to commit" # Коммитим изменения
+        git push # Отправляем изменения в репозиторий
