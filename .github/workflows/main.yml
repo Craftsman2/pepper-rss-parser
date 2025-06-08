@@ -39,8 +39,9 @@ jobs:
 
     - name: Commit and push RSS feed
       run: |
-        git config user.name 'github-actions[bot]' # Настраиваем пользователя Git
+        git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
-        git add pepper_feed.xml # Добавляем сгенерированный RSS-файл в Git
-        git commit -m "Update RSS feed [skip ci]" || echo "No changes to commit" # Коммитим изменения
-        git push # Отправляем изменения в репозиторий
+        git pull --rebase origin main # ДОБАВЬТЕ ЭТУ СТРОКУ
+        git add pepper_feed.xml
+        git commit -m "Update RSS feed [skip ci]" || echo "No changes to commit" # Сохраняем это изменение
+        git push
