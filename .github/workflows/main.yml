@@ -1,0 +1,46 @@
+name: Generate and Deploy RSS Feed
+
+on:
+  schedule:
+    # Запускать каждый час.
+    # Это стандартный синтаксис Cron.
+    # Например, '0 * * * *' означает "в 0 минут каждого часа, каждый день".
+    # Можно изменить на '0 0 * * *' для ежедневного запуска в полночь и т.д.
+    - cron: '0 * * * *'
+  workflow_dispatch: # Позволяет запускать вручную из вкладки Actions
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Используем последнюю версию Ubuntu
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4 # Скачиваем код из репозитория
+      with:
+        # Важно: Чтобы Action мог пушить изменения, нужно использовать токен с правами записи
+        token: ${{ secrets.GITHUB_TOKEN }} # Стандартный токен GitHub с правами на запись
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9' # Или 3.10, 3.11, в зависимости от предпочтений
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt # Устанавливаем библиотеки из requirements.txt
+
+    - name: Run Python script to generate RSS
+      env:
+        # Передаем API-ключ ScraperAPI как секрет
+        # Это ОЧЕНЬ ВАЖНО для безопасности!
+        SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }}
+      run: |
+        python pepper_parser.py # Запускаем ваш Python-скрипт
+
+    - name: Commit and push RSS feed
+      run: |
+        git config user.name 'github-actions[bot]' # Настраиваем пользователя Git
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git add pepper_feed.xml # Добавляем сгенерированный RSS-файл в Git
+        git commit -m "Update RSS feed [skip ci]" || echo "No changes to commit" # Коммитим изменения
+        git push # Отправляем изменения в репозиторий
