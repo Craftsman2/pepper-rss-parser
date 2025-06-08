@@ -1,4 +1,4 @@
-name: Запуск парсера Pepper (ScraperAPI) и сохранение в Main
+name: Запуск парсера Pepper (ScraperAPI) и публикация в GitHub Pages
 
 on:
   schedule:
@@ -13,10 +13,6 @@ jobs:
     steps:
     - name: Клонировать репозиторий
       uses: actions/checkout@v4
-      with:
-        # Важно: необходимо получить токен для записи в репозиторий
-        # По умолчанию checkout action использует токен, который может не иметь прав на push
-        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Настроить Python
       uses: actions/setup-python@v5
@@ -33,12 +29,10 @@ jobs:
         SCRAPERAPI_API_KEY: ${{ secrets.SCRAPERAPI_API_KEY }} # Передаем API-ключ как переменную окружения
       run: python pepper_parser.py
 
-    - name: Настроить Git и зафиксировать изменения в main
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # Проверяем, есть ли изменения в файле, чтобы избежать пустых коммитов
-        git add pepper_feed.xml
-        git diff-index --quiet HEAD || (git commit -m "Автоматическое обновление RSS-фида pepper_feed.xml [skip ci]" && git push)
-        echo "Проверка завершена. Если файл изменился, он был закоммичен и отправлен."
+    - name: Развертывание RSS-фида на GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: . # Публиковать содержимое текущей директории рабочего процесса
+        publish_branch: gh-pages # Публиковать в ветку gh-pages
+        force_orphan: true # Создаст новую чистую ветку gh-pages каждый раз
