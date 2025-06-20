@@ -6,6 +6,15 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch: # Позволяет запускать вручную
 
+ pause:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production  # Требует ручного подтверждения
+    steps:
+      - name: Ждём approval
+        run: echo "Продолжаем после ручного подтверждения..."
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
